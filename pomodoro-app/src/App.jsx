@@ -1,9 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 function App() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(() => {
+    const stored = localStorage.getItem("tasks");
+    return stored ? JSON.parse(stored) : [];
+  });
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("Medium");
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
+
+  const firstRun = useRef(true);
+
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      return; // ⬅ skip saving on the very first render
+    }
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   function addTask() {
     if (!title.trim()) return;
@@ -21,16 +40,9 @@ function App() {
     setPriority("Medium");
   }
 
-  function priorityStyles(priority) {
-    switch (priority) {
-      case "Low":
-        return "bg-green-200 text-green-700";
-      case "Medium":
-        return "bg-yellow-200 text-yellow-700";
-      case "High":
-        return "bg-red-200 text-red-700";
-      default:
-        return "";
+  function handleKeyDown(e) {
+    if (e.key === "Enter") {
+      addTask();
     }
   }
 
@@ -49,6 +61,7 @@ function App() {
           placeholder="Task title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          onKeyDown={handleKeyDown}
           className="border p-2 mr-2 rounded w-2/3"
         />
         <select
@@ -63,66 +76,72 @@ function App() {
 
         <button
           onClick={addTask}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          className="bg-blue-600 text-white px-4 py-2 mt-3 rounded hover:bg-blue-700 transition"
         >
           Add
         </button>
       </div>
 
       <ul>
-  {tasks.map(task => (
-    <li
-      key={task.id}
-      className="mb-2 p-3 border border-gray-700 rounded flex justify-between items-center"
-    >
-      <div>
-        <span
-          className={`block ${
-            task.done ? "line-through text-gray-400" : "text-white"
-          }`}
-        >
-          {task.title}
-        </span>
-        <span
-          className={`
-            text-xs mt-1 inline-block px-2 py-0.5 rounded 
-            ${
-              task.priority === "High"
-                ? "bg-red-600 text-white"
-                : task.priority === "Medium"
-                ? "bg-yellow-500 text-black"
-                : "bg-green-600 text-white"
-            }
-          `}
-        >
-          {task.priority}
-        </span>
-      </div>
+        {tasks.map((task) => (
+          <li
+            key={task.id}
+            className="relative mb-2 p-3 border border-gray-700 rounded flex justify-between items-center bg-black"
+          >
+            {task.done && (
+              <span className="absolute inset-0 bg-green-400 opacity-20 rounded pointer-events-none"></span>
+            )}
 
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={task.done}
-          onChange={() =>
-            setTasks(
-              tasks.map(t =>
-                t.id === task.id ? { ...t, done: !t.done } : t
-              )
-            )
-          }
-          className="w-4 h-4 accent-gray-500"
-        />
-        <button
-          onClick={() => deleteTask(task.id)}
-          className="text-red-500 hover:text-red-700"
-        >
-          Delete
-        </button>
-      </div>
-    </li>
-  ))}
-</ul>
+            <div className="relative z-10">
+              <span
+                className={`block ${
+                  task.done ? "line-through text-gray-400" : "text-white"
+                }`}
+              >
+                {task.title}
+              </span>
+              <span
+                className={`
+        text-xs mt-1 inline-block px-2 py-0.5 rounded 
+        ${
+          task.priority === "High"
+            ? "bg-red-600 text-white"
+            : task.priority === "Medium"
+            ? "bg-yellow-500 text-black"
+            : "bg-green-600 text-white"
+        }
+      `}
+              >
+                {task.priority}
+              </span>
+            </div>
 
+            <div className="flex items-center gap-2 relative z-10">
+              <input
+                type="checkbox"
+                checked={task.done}
+                onChange={() =>
+                  setTasks(
+                    tasks.map((t) =>
+                      t.id === task.id ? { ...t, done: !t.done } : t
+                    )
+                  )
+                }
+                className="w-4 h-4 accent-gray-500"
+              />
+              <button
+                onClick={() => deleteTask(task.id)}
+                className="text-red-500 hover:text-red-700"
+              >
+                <FontAwesomeIcon
+                  icon={faTrash}
+                  className="text-red-500 ml-2 cursor-pointer"
+                />
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
