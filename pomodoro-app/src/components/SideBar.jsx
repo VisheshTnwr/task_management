@@ -6,7 +6,7 @@ function Sidebar({ currentView, setCurrentView }) {
   ];
 
   return (
-    <aside className="w-48 bg-gray-900 text-white p-4  overflow-y-auto">
+    <aside className="w-48 bg-gray-900 text-white p-4 overflow-y-auto">
       <h2 className="text-lg font-bold mb-4">Task Views</h2>
       <ul>
         {items.map((item) => (
