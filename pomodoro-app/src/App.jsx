@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
+import Sidebar from "./components/SideBar";
 
 function App() {
+  const [currentView, setCurrentView] = useState("all");
+
   const [tasks, setTasks] = useState(() => {
     const stored = localStorage.getItem("tasks");
     return stored ? JSON.parse(stored) : [];
@@ -30,6 +33,7 @@ function App() {
         title,
         priority,
         done: false,
+        starred: false,
       },
     ]);
   }
@@ -48,16 +52,38 @@ function App() {
       )
     );
   }
+  // optimize Code to add the tasks in thier designated space in the sidebar
+
+  function toggleStar(id) {
+    setTasks(
+      tasks.map((task) =>
+        task.id === id ? { ...task, starred: !task.starred } : task
+      )
+    );
+  }
+
+  const filteredTasks = tasks.filter((task) => {
+    if (currentView === "completed") return task.done;
+    if (currentView === "starred") return task.starred; // Future use
+    return true;
+  });
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Task App</h1>
-      <TaskForm onAddTask={addTask} />
-      <TaskList 
-        tasks={tasks} 
-        onDeleteTask={deleteTask} 
-        onToggleTask={toggleTask} 
-      />
+    <div className="flex min-h-screen">
+      <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+
+      <div className="flex-grow p-4 overflow-y-auto">
+        <div className="max-w-md mx-auto">
+          <h1 className="text-2xl font-bold mb-4">Task App</h1>
+          <TaskForm onAddTask={addTask} />
+          <TaskList
+            tasks={filteredTasks}
+            onDeleteTask={deleteTask}
+            onToggleTask={toggleTask}
+            onToggleStar={toggleStar}
+          />
+        </div>
+      </div>
     </div>
   );
 }

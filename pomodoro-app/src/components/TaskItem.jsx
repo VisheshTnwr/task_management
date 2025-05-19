@@ -1,7 +1,9 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faStar as solidStar } from "@fortawesome/free-solid-svg-icons";
+import { faStar as regularStar } from "@fortawesome/free-regular-svg-icons";
 
-function TaskItem({ task, onDelete, onToggle }) {
+function TaskItem({ task, onDelete, onToggle, onStarToggle }) {
   return (
     <li className="relative mb-2 p-3 border border-gray-700 rounded flex justify-between items-center bg-black">
       {task.done && (
@@ -39,6 +41,16 @@ function TaskItem({ task, onDelete, onToggle }) {
           onChange={() => onToggle(task.id)}
           className="w-4 h-4 accent-gray-500"
         />
+        
+        {/* Star toggle button */}
+        <button
+          onClick={() => onStarToggle(task.id)}
+          className="text-yellow-400 hover:text-yellow-500 cursor-pointer"
+          aria-label="Toggle Star"
+        >
+          <FontAwesomeIcon icon={task.starred ? solidStar : regularStar} />
+        </button>
+
         <button
           onClick={() => onDelete(task.id)}
           className="text-red-500 hover:text-red-700"
